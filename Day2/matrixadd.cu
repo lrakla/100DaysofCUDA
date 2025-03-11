@@ -1,3 +1,4 @@
+//%%writefile matrixadd.cu
 #include <iostream>
 
 __global__ void matAddKernel(float *A, float *B, float *C, int N)
@@ -14,7 +15,7 @@ __global__ void matAddKernel(float *A, float *B, float *C, int N)
 
 int main()
 {
-    const int N = 20;
+    const int N = 1<<5;
     float *A, *B, *C;
 
     A = (float *)malloc(N*N*sizeof(float));
@@ -25,8 +26,8 @@ int main()
     {
         for(int j =0; j< N; j++)
         {
-            A[i*N + j] = 3.0f;
-            B[i*N + j] = 4.0f;
+            A[i*N + j] = 1.0f;
+            B[i*N + j] = 2.0f;
             C[i*N + j] = 0.0f;
         }
     }
@@ -47,30 +48,25 @@ int main()
 
     cudaMemcpy(C, C_d, N*N*sizeof(float), cudaMemcpyDeviceToHost);
 
-    printf("C:\n");
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-
-            printf("%.2f ",C[i * N + j]);
+    // verify C is 3.0
+    for(int i = 0; i < N; i++)
+    {
+        for(int j = 0; j < N; j++)
+        {
+            if(C[i*N + j] != 3.0f)
+            {
+                std::cout << "Error: mismatch at position " << i << " " << j << std 
+                << std::endl;
+                break;
+            }
         }
-        printf("\n");
     }
-     printf("A:\n");
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
 
-            printf("%.2f ", A[i * N + j]);
-        }
-        printf("\n");
-    }
-     printf("B:\n");
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
+    std::cout << "Matrix addition completed successfully!" << std::endl;
 
-            printf("%.2f ", B[i * N + j]);
-        }
-        printf("\n");
-    }
+    free(A);
+    free(B);
+    free(C);
 
     cudaFree(A_d);
     cudaFree(B_d);
